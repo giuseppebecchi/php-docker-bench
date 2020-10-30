@@ -12,3 +12,8 @@ services:
       - "./docker-compose/web/nginx.conf:/etc/nginx/nginx.conf"
       - "./docker-compose/web/local.ini:/etc/php/7.4/fpm/conf.d/local.ini"
       - ".:/var/www:cached"
+
+
+#ADD ./docker-compose/aws/config /root/.aws
+#ADD ./docker-compose/aws/credentials /root/.aws
+#ADD ./docker-compose/aws/.s3cfg /root/

@@ -35,7 +35,6 @@ RUN apt-get update && apt-get install -y software-properties-common curl inetuti
     zip \
     unzip \
     nginx && \
-    apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/* && \
     mkdir -p /run/php && chmod -R 755 /run/php && \
     sed -i 's|.*listen =.*|listen=9000|g' /etc/php/${PHP_VERSION}/fpm/pool.d/www.conf && \
     sed -i 's|.*error_log =.*|error_log=/proc/self/fd/2|g' /etc/php/${PHP_VERSION}/fpm/php-fpm.conf && \
@@ -47,6 +46,44 @@ RUN apt-get update && apt-get install -y software-properties-common curl inetuti
     sed -i 's#.*date.timezone.*#date.timezone=UTC#g' /etc/php/${PHP_VERSION}/fpm/pool.d/www.conf && \
     sed -i 's#.*clear_env.*#clear_env=no#g' /etc/php/${PHP_VERSION}/fpm/pool.d/www.conf
 
+
+# Install system dependencies
+RUN apt-get install -y git \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    php${PHP_VERSION}-gd \
+    php${PHP_VERSION}-exif
+
+# Librerie aws
+RUN apt-get install -y python3-pip \
+    && pip3 install awscli
+
+
+# Install NodeJS
+RUN curl -sL https://deb.nodesource.com/setup_10.x | bash
+RUN apt-get update && apt-get install -y nodejs
+
+
+RUN apt-get install -y php${PHP_VERSION}-dev \
+    libmcrypt-dev \
+    && pecl install mcrypt-1.0.3
+
+RUN pecl install redis
+
+# Clear cache
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+
+#Create directory for backups
+WORKDIR /var/backups/restore
+
+#Copy sws cli configuration
+WORKDIR /root/.aws
+
+RUN useradd -ms /bin/bash solr
+
 # Copy NGINX service script
 COPY start-nginx.sh /etc/services.d/nginx/run
 RUN chmod 755 /etc/services.d/nginx/run
@@ -54,3 +91,13 @@ RUN chmod 755 /etc/services.d/nginx/run
 # Copy PHP-FPM service script
 COPY start-fpm.sh /etc/services.d/php_fpm/run
 RUN chmod 755 /etc/services.d/php_fpm/run
+
+
+
+WORKDIR /usr/share/nginx/html/wikido
+
+# Copy existing application directory contents
+#COPY . /usr/share/nginx/html/wikido
+
+# Copy existing application directory permissions
+#COPY --chown=www:www . /usr/share/nginx/html/wikido
