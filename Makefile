@@ -5,27 +5,20 @@ REPS ?= 100
 
 bench_all: bench_official-fpm bench_official-apache bench_custom-fpm
 
-bench_official-fpm:
-	@docker-compose -f docker-compose.official-fpm.yaml -p php_bench_official_fpm down
-	@docker-compose -f docker-compose.official-fpm.yaml -p php_bench_official_fpm build
-	@docker-compose -f docker-compose.official-fpm.yaml -p php_bench_official_fpm up -d
+start:
 	@echo ""
-	@echo "Official php-fpm + nginx"
+	@echo "Starting docker-compose.yml"
 	@echo ""
-	sleep 3;
-	siege -b -c${CONCURRENCY} -r${REPS} http://127.0.0.1/lucky/number
-	@docker-compose -f docker-compose.official-fpm.yaml -p php_bench_official_fpm down
+	@docker-compose down
+	@docker-compose up -d
 
-bench_official-apache:
-	@docker-compose -f docker-compose.official-apache.yaml -p php_bench_official_apache down
-	@docker-compose -f docker-compose.official-apache.yaml -p php_bench_official_apache build
-	@docker-compose -f docker-compose.official-apache.yaml -p php_bench_official_apache up -d
+build:
 	@echo ""
-	@echo "Official mod_php + apache"
+	@echo "Starting docker-compose.yml"
 	@echo ""
-	sleep 3;
-	siege -b -c${CONCURRENCY} -r${REPS} http://127.0.0.1/lucky/number
-	@docker-compose -f docker-compose.official-apache.yaml -p php_bench_official_apache down
+	@docker-compose down
+	@docker-compose build
+	@docker-compose up -d
 
 bench_custom-fpm:
 	@docker-compose -f docker-compose.custom-fpm.yaml -p php_bench_custom_fpm down
@@ -35,10 +28,15 @@ bench_custom-fpm:
 	@echo "Custom php-fpm + nginx"
 	@echo ""
 	sleep 3;
-	siege -b -c${CONCURRENCY} -r${REPS} http://127.0.0.1/lucky/number
+	siege -b -c${CONCURRENCY} -r${REPS} http://127.0.0.1:8010/lucky/number
 	@docker-compose -f docker-compose.custom-fpm.yaml -p php_bench_custom_fpm down
+
+install_symphony:
+	@docker run --rm \
+	--volume ${PWD}/symfony_skeleton:/app \
+	composer:1 install --ansi
 
 install:
 	@docker run --rm \
-	--volume ${CURDIR}/symfony_skeleton:/app \
+	--volume ${PWD}:/app \
 	composer install --ansi

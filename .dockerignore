@@ -1,0 +1,3 @@
+node_modules/*
+eventmie-pro/node_modules/*
+docker-compose/mysql
